@@ -67,6 +67,9 @@ class UKF {
     ///* Sigma point spreading parameter
     double lambda_;
 
+    ///* Sigma point spreading parameter for augmented state
+    double lambda_aug_;
+
 
     /**
      * Constructor

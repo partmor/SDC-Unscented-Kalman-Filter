@@ -41,6 +41,9 @@ UKF::UKF() {
   // Sigma point spreading parameter
   lambda_ = 3 - n_x_;
 
+  // Sigma point spreading parameter for augmented state
+  lambda_aug_ = 3 - n_aug_;
+
   //TODO: tune params and variables bellow:
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
@@ -159,8 +162,8 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
   Xsig_aug.col(0)  = x_aug;
   for (int i = 0; i< n_aug_; i++)
   {
-    Xsig_aug.col(i+1)        = x_aug + sqrt(lambda_+n_aug_) * L.col(i);
-    Xsig_aug.col(i+1+n_aug_) = x_aug - sqrt(lambda_+n_aug_) * L.col(i);
+    Xsig_aug.col(i+1)        = x_aug + sqrt(lambda_aug_+n_aug_) * L.col(i);
+    Xsig_aug.col(i+1+n_aug_) = x_aug - sqrt(lambda_aug_+n_aug_) * L.col(i);
   }
 
   //write result
@@ -233,10 +236,10 @@ void UKF::PredictMeanAndCovariance(MatrixXd Xsig_pred) {
   MatrixXd P = MatrixXd(n_x_, n_x_);
 
   // set weights
-  double weight_0 = lambda_/(lambda_+n_aug_);
+  double weight_0 = lambda_aug_/(lambda_aug_+n_aug_);
   weights(0) = weight_0;
   for (int i=1; i<2*n_aug_+1; i++) {  //2n+1 weights
-    double weight = 0.5/(n_aug_+lambda_);
+    double weight = 0.5/(n_aug_+lambda_aug_);
     weights(i) = weight;
   }
 
