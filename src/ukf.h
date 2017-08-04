@@ -58,6 +58,12 @@ class UKF {
     ///* Weights of sigma points
     VectorXd weights_;
 
+    //* Laser measurement dimensions
+    int n_z_laser_;
+
+    //* Radar measurement dimensions
+    int n_z_radar_ ;
+
     ///* State dimension
     int n_x_;
 
@@ -107,9 +113,12 @@ class UKF {
     void UpdateRadar(MeasurementPackage meas_package);
 
   private:
+    void GenerateSigmaPoints(MatrixXd* Xsig_out);
     void AugmentedSigmaPoints(MatrixXd* Xsig_out);
-    void SigmaPointPrediction(MatrixXd Xsig_aug, double delta_t, MatrixXd* Xsig_out);
-    void PredictMeanAndCovariance(MatrixXd Xsig_pred);
+    void SigmaPointPrediction(MatrixXd Xsig_aug, double delta_t);
+    void PredictMeanAndCovariance();
+    void PredictRadarMeasurement(MatrixXd* Zsig_out, VectorXd* z_out, MatrixXd* S_out);
+    void UpdateState(VectorXd z, VectorXd z_pred, MatrixXd S, MatrixXd Zsig);
 };
 
 #endif /* UKF_H */
