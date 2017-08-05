@@ -117,6 +117,7 @@ class UKF {
     void AugmentedSigmaPoints(MatrixXd* Xsig_out);
     void SigmaPointPrediction(MatrixXd Xsig_aug, double delta_t);
     void PredictMeanAndCovariance();
+    void PredictLidarMeasurement(MatrixXd* Zsig_out, VectorXd* z_out, MatrixXd* S_out);
     void PredictRadarMeasurement(MatrixXd* Zsig_out, VectorXd* z_out, MatrixXd* S_out);
     void UpdateState(VectorXd z, VectorXd z_pred, MatrixXd S, MatrixXd Zsig);
 };
