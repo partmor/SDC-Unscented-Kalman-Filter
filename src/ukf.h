@@ -64,6 +64,12 @@ class UKF {
     //* Radar measurement dimensions
     int n_z_radar_ ;
 
+    //* NIS for laser measurements
+    double NIS_laser_;
+
+    //* NIS for radar measurements
+    double NIS_radar_;
+
     ///* State dimension
     int n_x_;
 
@@ -120,6 +126,7 @@ class UKF {
     void PredictLidarMeasurement(MatrixXd* Zsig_out, VectorXd* z_out, MatrixXd* S_out);
     void PredictRadarMeasurement(MatrixXd* Zsig_out, VectorXd* z_out, MatrixXd* S_out);
     void UpdateState(VectorXd z, VectorXd z_pred, MatrixXd S, MatrixXd Zsig);
+    double CalculateNIS(VectorXd z, VectorXd z_pred, MatrixXd S);
 };
 
 #endif /* UKF_H */

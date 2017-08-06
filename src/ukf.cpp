@@ -126,6 +126,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       v = rho_dot;
       yaw = - phi;
       yaw_dot = 0;
+
     }
     else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
 
@@ -134,6 +135,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       v = 0;
       yaw = 0;
       yaw_dot = 0;
+
     }
 
     // initial state vector
@@ -213,7 +215,8 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   // 2. update state: calculate posterior state k+1|k+1
   UpdateState(meas_package.raw_measurements_, z_pred, S, Zsig);
 
-  // TODO: calculate lidar NIS
+  // Finally, compute Normalized Innovation Squared
+  NIS_laser_ = CalculateNIS(meas_package.raw_measurements_, z_pred, S);
 }
 
 /**
@@ -236,7 +239,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   // 2. update state: calculate posterior state k+1|k+1
   UpdateState(meas_package.raw_measurements_, z_pred, S, Zsig);
 
-  // TODO: calculate radar NIS
+  // Finally, compute Normalized Innovation Squared
+  NIS_radar_ = CalculateNIS(meas_package.raw_measurements_, z_pred, S);
 }
 
 void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out) {
@@ -517,4 +521,10 @@ void UKF::UpdateState(VectorXd z, VectorXd z_pred, MatrixXd S, MatrixXd Zsig) {
   //update state mean and covariance matrix
   x_ = x_ + K * z_diff;
   P_ = P_ - K * S * K.transpose();
+}
+
+double UKF::CalculateNIS(VectorXd z, VectorXd z_pred, MatrixXd S){
+  VectorXd z_diff = z - z_pred;
+  double e = z_diff.transpose() * S.inverse() * z_diff;
+  return e;
 }
