@@ -39,7 +39,6 @@ int main()
   vector<VectorXd> ground_truth;
 
   // file to ouptut NIS
-  //ofstream out_file_("test_output.txt", ofstream::out);
   ofstream outfile;
   outfile.open("test_output.txt",ofstream::out);
   outfile << "sensor" << ", ";
