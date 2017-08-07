@@ -49,6 +49,9 @@ int main()
   outfile << "y_est" << ",";
   outfile << "vx_est" << ",";
   outfile << "vy_est" << ",";
+  outfile << "v_est" << ",";
+  outfile << "yaw_est" << ",";
+  outfile << "yaw_dot_est" << ",";
   outfile << "sensor" << ",";
   outfile << "nis" << endl;
 
@@ -127,6 +130,7 @@ int main()
         double p_y = ukf.x_(1);
         double v  = ukf.x_(2);
         double yaw = ukf.x_(3);
+        double yaw_dot = ukf.x_(4);
 
         double v1 = cos(yaw)*v;
         double v2 = sin(yaw)*v;
@@ -142,6 +146,9 @@ int main()
           outfile << fixed << setprecision(4) << p_y << ",";
           outfile << fixed << setprecision(4) << v1 << ",";
           outfile << fixed << setprecision(4) << v2 << ",";
+          outfile << fixed << setprecision(4) << v << ",";
+          outfile << fixed << setprecision(4) << yaw << ",";
+          outfile << fixed << setprecision(4) << yaw_dot << ",";
           outfile << sensor_type << ",";
     	    double nis;
           if (sensor_type.compare("L") == 0) nis = ukf.NIS_laser_;
