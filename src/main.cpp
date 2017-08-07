@@ -40,8 +40,16 @@ int main()
 
   // file to ouptut NIS
   ofstream outfile;
-  outfile.open("test_output.txt",ofstream::out);
-  outfile << "sensor" << ", ";
+  outfile.open("output.txt",ofstream::out);
+  outfile << "x_true" << ",";
+  outfile << "y_true" << ",";
+  outfile << "vx_true" << ",";
+  outfile << "vy_true" << ",";
+  outfile << "x_est" << ",";
+  outfile << "y_est" << ",";
+  outfile << "vx_est" << ",";
+  outfile << "vy_est" << ",";
+  outfile << "sensor" << ",";
   outfile << "nis" << endl;
 
   h.onMessage([&ukf,&tools,&estimations,&ground_truth,&outfile](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
@@ -115,8 +123,26 @@ int main()
         //Call ProcessMeasurment(meas_package) for Kalman filter
     	  ukf.ProcessMeasurement(meas_package);
 
+    	  double p_x = ukf.x_(0);
+        double p_y = ukf.x_(1);
+        double v  = ukf.x_(2);
+        double yaw = ukf.x_(3);
+
+        double v1 = cos(yaw)*v;
+        double v2 = sin(yaw)*v;
+
+    	  // Dump ground truth state, predicted state, radar type and NIS
+    	  // to file
     	  if (outfile.is_open()){
-    	    outfile << sensor_type << ", ";
+    	    outfile << fixed << setprecision(4) << x_gt << ",";
+          outfile << fixed << setprecision(4) << y_gt << ",";
+          outfile << fixed << setprecision(4) << vx_gt << ",";
+          outfile << fixed << setprecision(4) << vy_gt << ",";
+          outfile << fixed << setprecision(4) << p_x << ",";
+          outfile << fixed << setprecision(4) << p_y << ",";
+          outfile << fixed << setprecision(4) << v1 << ",";
+          outfile << fixed << setprecision(4) << v2 << ",";
+          outfile << sensor_type << ",";
     	    double nis;
           if (sensor_type.compare("L") == 0) nis = ukf.NIS_laser_;
           else if (sensor_type.compare("R") == 0) nis = ukf.NIS_radar_;
@@ -126,14 +152,6 @@ int main()
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
 
     	  VectorXd estimate(4);
-
-    	  double p_x = ukf.x_(0);
-    	  double p_y = ukf.x_(1);
-    	  double v  = ukf.x_(2);
-    	  double yaw = ukf.x_(3);
-
-    	  double v1 = cos(yaw)*v;
-    	  double v2 = sin(yaw)*v;
 
     	  estimate(0) = p_x;
     	  estimate(1) = p_y;
