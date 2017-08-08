@@ -358,6 +358,9 @@ void UKF::PredictMeanAndCovariance() {
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     x_ = x_ + weights_(i) * Xsig_pred_.col(i);
   }
+  //normalize yaw component to range [-pi, pi]
+  while (x_(3)> M_PI) x_(3)-=2.*M_PI;
+  while (x_(3)<-M_PI) x_(3)+=2.*M_PI;
 
   //predicted state covariance matrix
   P_.fill(0.0);
@@ -520,6 +523,9 @@ void UKF::UpdateState(VectorXd z, VectorXd z_pred, MatrixXd S, MatrixXd Zsig) {
 
   //update state mean and covariance matrix
   x_ = x_ + K * z_diff;
+  //normalize yaw component to range [-pi, pi]
+  while (x_(3)> M_PI) x_(3)-=2.*M_PI;
+  while (x_(3)<-M_PI) x_(3)+=2.*M_PI;
   P_ = P_ - K * S * K.transpose();
 }
 
