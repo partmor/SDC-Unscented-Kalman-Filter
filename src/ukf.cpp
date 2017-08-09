@@ -52,10 +52,10 @@ UKF::UKF() {
    */
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 30;
+  std_a_ = 2;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 30;
+  std_yawdd_ = 1;
 
   /**
    * Sigma points and state-related attributes
@@ -102,10 +102,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   if (!is_initialized_) {
     // first measurement
 
-    // TODO:
-    // 1. check the v, yaw, and yaw_dot initializations.
-    // 2. explore ways of more precise initialization of P within each sensor case
-
     float px, py, v, yaw, yaw_dot;
     P_ = MatrixXd::Identity(n_x_, n_x_);
 
@@ -124,17 +120,29 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       // the v vector could be any one yielding a projection equal to rho_dot,
       // i.e, there are infinite vectors that can project onto rho_dot
       v = rho_dot;
-      yaw = - phi;
+      yaw = 0;
       yaw_dot = 0;
+
+      P_(0,0) = std_radr_;
+      P_(1,1) = std_radr_;
+      P_(2,2) = rho_dot;
+      P_(3,3) = M_PI;
+      P_(4,4) = 0.1;
 
     }
     else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
 
       px = meas_package.raw_measurements_(0);
       py = meas_package.raw_measurements_(1);
-      v = 0;
+      v = 5;
       yaw = 0;
       yaw_dot = 0;
+
+      P_(0,0) = std_laspx_;
+      P_(1,1) = std_laspy_;
+      P_(2,2) = 5;
+      P_(3,3) = M_PI;
+      P_(4,4) = 0.1;
 
     }
 
