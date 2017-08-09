@@ -103,9 +103,10 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     // first measurement
 
     float px, py, v, yaw, yaw_dot;
-    P_ = MatrixXd::Identity(n_x_, n_x_);
+    x_ = VectorXd(n_x_);
+    P_ = MatrixXd(n_x_,n_x_);
 
-    if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+    if (use_radar_ && (meas_package.sensor_type_ == MeasurementPackage::RADAR)) {
 
       //recover measurement parameters
       float rho = meas_package.raw_measurements_(0);
@@ -114,7 +115,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
       // positions px,py can be recovered rigorously
       px = rho * cos(phi);
-      py = - rho * sin(phi);
+      py = rho * sin(phi);
 
       // rho_dot is the projection of the object's velocity v on the rho direction.
       // the v vector could be any one yielding a projection equal to rho_dot,
@@ -123,6 +124,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       yaw = 0;
       yaw_dot = 0;
 
+      P_.fill(0.0);
       P_(0,0) = std_radr_;
       P_(1,1) = std_radr_;
       P_(2,2) = rho_dot;
@@ -130,7 +132,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       P_(4,4) = 0.1;
 
     }
-    else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+    else if (use_laser_ && (meas_package.sensor_type_ == MeasurementPackage::LASER)) {
 
       px = meas_package.raw_measurements_(0);
       py = meas_package.raw_measurements_(1);
@@ -138,6 +140,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       yaw = 0;
       yaw_dot = 0;
 
+      P_.fill(0.0);
       P_(0,0) = std_laspx_;
       P_(1,1) = std_laspy_;
       P_(2,2) = 5;
@@ -145,14 +148,17 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       P_(4,4) = 0.1;
 
     }
+    else{
+      // it could happen that first measurement comes from radar, but user_radar_ is set to false.
+      // in this case we should not mark as initialized or set timestamp until we receive the first laser measurement
+      return;
+    }
 
-    // initial state vector
-    x_ = VectorXd(n_x_);
     x_ << px, py, v, yaw, yaw_dot;
 
-    // done initializing, no need to predict or update
     is_initialized_ = true;
     time_us_ = meas_package.timestamp_;
+    // done initialization, no need to predict or update
     return;
   }
 
@@ -170,13 +176,13 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   /*
   * Radar updates
   */
-  if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+  if (use_radar_ && (meas_package.sensor_type_ == MeasurementPackage::RADAR)) {
     UpdateRadar(meas_package);
   }
   /*
   * Laser updates
   */
-  else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+  else if (use_laser_ && (meas_package.sensor_type_ == MeasurementPackage::LASER)) {
     UpdateLidar(meas_package);
   }
 
@@ -366,6 +372,11 @@ void UKF::PredictMeanAndCovariance() {
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     x_ = x_ + weights_(i) * Xsig_pred_.col(i);
   }
+  //if estimated velocity is negative, invert sign and add pi to the predicted yaw
+  if (x_(2) < 0){
+    x_(2) = -x_(2);
+    x_(3) += M_PI;
+  }
   //normalize yaw component to range [-pi, pi]
   while (x_(3)> M_PI) x_(3)-=2.*M_PI;
   while (x_(3)<-M_PI) x_(3)+=2.*M_PI;
@@ -531,6 +542,11 @@ void UKF::UpdateState(VectorXd z, VectorXd z_pred, MatrixXd S, MatrixXd Zsig) {
 
   //update state mean and covariance matrix
   x_ = x_ + K * z_diff;
+  //if estimated velocity is negative, invert sign and add pi to the predicted yaw
+  if (x_(2) < 0){
+    x_(2) = -x_(2);
+    x_(3) += M_PI;
+  }
   //normalize yaw component to range [-pi, pi]
   while (x_(3)> M_PI) x_(3)-=2.*M_PI;
   while (x_(3)<-M_PI) x_(3)+=2.*M_PI;
