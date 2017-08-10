@@ -52,7 +52,7 @@ UKF::UKF() {
    */
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 0.5;
+  std_a_ = 1.0;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
   std_yawdd_ = 0.5;
@@ -125,11 +125,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       yaw_dot = 0;
 
       P_.fill(0.0);
-      P_(0,0) = std_radr_;
-      P_(1,1) = std_radr_;
-      P_(2,2) = rho_dot;
-      P_(3,3) = M_PI;
-      P_(4,4) = 0.1;
+      P_(0,0) = std_radr_*std_radr_;
+      P_(1,1) = std_radr_*std_radr_;
+      P_(2,2) = rho_dot*rho_dot;
+      P_(3,3) = M_PI*M_PI;
+      P_(4,4) = 0.1*0.1;
 
     }
     else if (use_laser_ && (meas_package.sensor_type_ == MeasurementPackage::LASER)) {
@@ -141,11 +141,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       yaw_dot = 0;
 
       P_.fill(0.0);
-      P_(0,0) = std_laspx_;
-      P_(1,1) = std_laspy_;
-      P_(2,2) = 5;
-      P_(3,3) = M_PI;
-      P_(4,4) = 0.1;
+      P_(0,0) = std_laspx_*std_laspx_;
+      P_(1,1) = std_laspy_*std_laspy_;
+      P_(2,2) = 5*5;
+      P_(3,3) = M_PI*M_PI;
+      P_(4,4) = 0.1*0.1;
 
     }
     else{
