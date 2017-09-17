@@ -2,6 +2,11 @@
 [//]: # (Image References)
 [state_def]: ./img/state_def.png
 [sigma_points]: ./img/sigma_points.png
+[radar_nis]: ./img/radar_nis.png
+[laser_nis]: ./img/laser_nis.png
+[position]: ./img/position.png
+[velocity]: ./img/velocity.png
+[yaw]: ./img/yaw.png
 
 The goal of this project is to develop a complete **sensor fusion model**, based on the **Unscented Kalman Filter** *(UKF)*, in order to esimate the state of a moving vehicle combining measurments from two different types of sensors: lidar and radar. 
 
@@ -80,6 +85,14 @@ For both lidar and radar measurements, the update step consists of:
 
 Finally, for the eventual consistency check, the *Normalized Innovation Squared* (NIS) is calculated, using `UKF::CalculateNIS()`.
 
+## Consistency 
+
+The noise parameters and initialization process were tweaked in order to make the system **consistent**. This was checked by means of a NIS test for radar and laser measurents:
+
+![radar_nis]
+
+![laser_nis]
+
 ## Performance Evaluation
 
 The ground truth positions for each instant are available. Thus, the performance of the tracking algorithm is evaluated with the Root Mean Squared Error (RMSE), an accuracy metric that measures the deviation of the estimated state from the true state.
@@ -97,4 +110,16 @@ double yaw_dot = ukf.x_(4);
 
 double vx = cos(yaw)*v;
 double vy = sin(yaw)*v;
-``
+```
+
+## Conclusion
+
+The Unscented Kalman Filter was tuned aiming for consistency, and succesfully managed to locate a moving vehicle:
+
+![position]
+
+One of the most fascinating capabilities of the UKF, is that it is able to predict accurately underlying state variables that are not even provided by sensors, such as velocity and yaw:
+
+![velocity]
+
+![yaw]
